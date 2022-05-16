@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div id="app"></div>
+
+
+<script>
+    const model = {
+        inputs: {
+            newComment: {
+
+            }
+        }
+    };
+
+    // controller
+    getComments();
+    async function getComments() {
+        const response = await axios.get('/comments');
+        model.comments = response.data;
+        console.log(model.comments);
+        updateView();
+    }
+
+    async function newComment() {
+        const comment = {
+            text: model.inputs.newComment.text,
+            author: model.inputs.newComment.author,
+            created: new Date(),
+        };
+        const response = await axios.post('/comments', comment);
+        getComments();
+    }
+
+    async function deleteComment(id) {
+        const response = await axios.delete('/comments/' + id);
+        getComments();
+    }
+
+    // view
+    function updateView() {
+        document.getElementById('app').innerHTML = `
+
+            <h3>Kommentarer</h3>
+            <ul>
+                ${model.comments.map(c => `
+                <li>
+                    ${c.text}
+                    <button onclick="deleteComment('${c.id}')">x</button>
+                    <br/>
+                    <small>
+                        ${new Date(c.created).toLocaleString()} 
+                        ${c.author}
+                    </small>
+                </li>
+                `).join('')}
+            </ul>
+
+            <h3>Ny kommentar</h3>
+            Tekst<br/>
+            <input
+                type="text"
+                oninput="model.inputs.newComment.text=this.value"
+                value="${model.inputs.newComment.text||''}"
+                /><br/>
+            Forfatter<br/>
+            <input
+                type="text"
+                oninput="model.inputs.newComment.author=this.value"
+                value="${model.inputs.newComment.author||''}"
+                /><br/>
+            <button onclick="newComment()">Registrer ny kommentar</on>
+        `;
+    }
+</script>
+</body>
+</html>
